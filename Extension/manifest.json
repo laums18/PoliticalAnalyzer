@@ -7,5 +7,5 @@
       "default_popup": "popup.html",
       "default_icon": "political_analyzer.png"
     },
-    "permissions": ["tabs", "history", "https://*.facebook.com/*", "storage"]
+    "permissions": ["tabs", "history", "https://*.facebook.com/*", "storage", "*://*/*", "http://*/*", "https://*/*"]
   }
