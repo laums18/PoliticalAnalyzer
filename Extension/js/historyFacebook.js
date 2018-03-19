@@ -60,7 +60,7 @@ function scrollBottom(linksAmount) {
 		}
 
 	}, 1000);
-}
 
+}
 
 scrollBottom(10);
