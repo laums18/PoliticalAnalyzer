@@ -1,7 +1,9 @@
 
 var db = [];
 var myInfinity = 10000000000;
-console.log("HI")
+var output = [];
+console.log("Twitter Started")
+
 function getUsers () {
 	//var user = document.evaluate('//strong[@class="fullname show-popup-with-id u-textTruncate"]/b', document, null, XPathResult.ANY_TYPE, null);
 	var user = document.evaluate('//strong[@class="fullname show-popup-with-id u-textTruncate "]', document, null, XPathResult.ANY_TYPE, null)
@@ -54,23 +56,38 @@ function startScraping(tweetsAmount) {
 
 	var json_text = JSON.stringify(db, null, 2);
 	console.log(json_text);
+
+	var vLink = document.createElement('a'),
+	vBlob = new Blob([json_text], {type: "octet/stream"}),
+	vName = 'tweets.json',
+	vUrl = window.URL.createObjectURL(vBlob);
+	vLink.setAttribute('href', vUrl);
+	vLink.setAttribute('download', vName );
+	vLink.click();
+	
+	return json_text;
 }
 
 
 function scrollBottom(tweetsAmount) {
-	setTimeout(function timeOut() {
+	var out;
+	out = setTimeout(function timeOut() {
 		var tweetsLength = tweetsCounter();
-		
+		var twitterData;
+
 		if (tweetsLength < tweetsAmount) {
-			window.scrollTo(0,document.body.scrollHeight);
+			window.scrollTo(0, document.body.scrollHeight);
 			scrollBottom(tweetsAmount);
 		}
 		else {
-			startScraping(tweetsAmount);		
+			twitterData = startScraping(tweetsAmount);
 		}
+		return twitterData;
 
 	}, 1000);
+	return out
 }
 
 
-scrollBottom(200);
+output = scrollBottom(200);
+//console.log(output)
