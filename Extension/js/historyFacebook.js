@@ -1,5 +1,7 @@
 var db = [];
 var myInfinity = 10000000000;
+var output = [];
+
 console.log("HI")
 
 function getLinks () {
@@ -44,23 +46,36 @@ function startScraping(linksAmount) {
 
 	var json_text = JSON.stringify(db, null, 2);
 	console.log(json_text);
+
+	var vLink = document.createElement('a'),
+	vBlob = new Blob([json_text], {type: "octet/stream"}),
+	vName = 'facebookLinks.json',
+	vUrl = window.URL.createObjectURL(vBlob);
+	vLink.setAttribute('href', vUrl);
+	vLink.setAttribute('download', vName );
+	vLink.click();
+
+	return json_text;
 }
 
 
 function scrollBottom(linksAmount) {
-	setTimeout(function timeOut() {
+	var out = setTimeout(function timeOut() {
 		var linksLength = linksCounter();
-		
+		var linksArray;
+
 		if (linksLength < linksAmount) {
 			window.scrollTo(0,document.body.scrollHeight);
 			scrollBottom(linksAmount);
 		}
 		else {
-			startScraping(linksAmount);		
+			linksArray = startScraping(linksAmount);
 		}
 
+		return linksArray;
 	}, 1000);
 
+	return out
 }
 
-scrollBottom(10);
+output = scrollBottom(10);
