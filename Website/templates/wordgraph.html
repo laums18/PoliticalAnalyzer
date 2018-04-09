@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
+  <script>
+    zingchart.MODULESDIR = "https://cdn.zingchart.com/modules/";
+    ZC.LICENSE = ["569d52cefae586f634c54f86dc99e6a9", "ee6b7db5b51705a13dc2339db3edaf6d"];
+  </script>
+  <link href="https://fonts.googleapis.com/css?family=Merriweather" rel="stylesheet">
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    #myChart {
+      height: 100%;
+      width: 100%;
+      min-height: 150px;
+    }
+
+    .zc-ref {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="myChart"><a class="zc-ref" href="https://www.zingchart.com">Powered by ZingChart</a></div>
+  <script>
+    var myConfig = {
+      type: 'wordcloud',
+      options: {
+        text: '{{website_text}}',
+
+        minLength: 4,
+        ignore: ['establish', 'this'],
+        maxItems: 50,
+        aspect: 'spiral',
+        rotate: true,
+
+        colorType: 'palette',
+        palette: ['#D32F2F', '#1976D2', '#9E9E9E', '#E53935', '#1E88E5', '#7E57C2', '#F44336', '#2196F3', '#A1887F'],
+
+        style: {
+          fontFamily: 'Merriweather',
+
+          hoverState: {
+            backgroundColor: '#1976D2',
+            borderColor: 'none',
+            borderRadius: 3,
+            fontColor: 'white'
+          },
+          tooltip: {
+            text: 'We the people of the United States, in order to form a more perfect union, establish justice, insure domestic tranquility, provide for the common defense, promote the general welfare, and secure the blessings of liberty to ourselves and our posterity, do ordain and establish this Constitution for the United States of America.',
+            visible: true,
+
+            alpha: 0.9,
+            backgroundColor: '#D32F2F',
+            borderColor: 'none',
+            borderRadius: 3,
+            fontColor: 'white',
+            fontFamily: 'Georgia',
+            padding: 5,
+            textAlpha: 1,
+            width: 400,
+            wrapText: true
+          }
+        }
+      }
+    };
+
+    zingchart.render({
+      id: 'myChart',
+      data: myConfig,
+      height: '100%',
+      width: '100%'
+    });
+  </script>
+</body>
+
+</html>
