@@ -43,7 +43,7 @@ function tweetsCounter() {
 }
 
 
-function startScraping(tweetsAmount) {
+function startScraping(tweetsAmount, resolve, reject) {
 	var tweets = getTweets();
 	var users = getUsers();
 
@@ -55,7 +55,7 @@ function startScraping(tweetsAmount) {
 	};
 
 	var json_text = JSON.stringify(db, null, 2);
-	console.log(json_text);
+	resolve(json_text);
 
 	var vLink = document.createElement('a'),
 	vBlob = new Blob([json_text], {type: "octet/stream"}),
@@ -69,25 +69,26 @@ function startScraping(tweetsAmount) {
 }
 
 
-function scrollBottom(tweetsAmount) {
-	var out;
-	out = setTimeout(function timeOut() {
+function scrollBottom(tweetsAmount, resolve, reject) {
+	setTimeout(function timeOut() {
 		var tweetsLength = tweetsCounter();
 		var twitterData;
 
 		if (tweetsLength < tweetsAmount) {
 			window.scrollTo(0, document.body.scrollHeight);
-			scrollBottom(tweetsAmount);
+			scrollBottom(tweetsAmount, resolve, reject);
 		}
 		else {
-			twitterData = startScraping(tweetsAmount);
+			twitterData = startScraping(tweetsAmount,resolve, reject);
 		}
 		return twitterData;
 
 	}, 1000);
-	return out
 }
 
-
-output = scrollBottom(200);
-//console.log(output)
+var promise = new Promise(function(resolve, reject) {
+	scrollBottom(10, resolve, reject);
+	console.log("DOne")
+})
+console.log(promise)
+promise;

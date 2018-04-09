@@ -1,11 +1,88 @@
 <html>
 	<head>
-		
+		<title> Bias Analyzer</title>
+		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+		<script src="/js/jquery.min.js"></script>
+		<link rel="stylesheet" href="/css/bootstrap.min.css">
+		<script src="/js/bootstrap.min.js"></script>
+		<script src="/js/angular.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/styles.css">
+		    <script src="js/lib/d3/d3.js"></script>
+     <script src="js/lib/d3/d3.layout.cloud.js"></script>
+    <script src="js/d3.wordcloud.js"></script> 
+
+		<script src='js/index.js'></script>
 	</head>
 	<body>
-		<h1>Political Analyzer</h1>
-		<button id="alertButton">Import Data</button>
-		<button id="historyButton">Chrome History</button>
+		<div ng-app="myApp" ng-controller="page">
+			<nav class="navbar navbar-default" style="display: flex; align-items: center; padding: 0px; padding-bottom: 40px; width: 100%;text-align: center;">
+					<div class="navbar-header" style="z-index: 4;">
+						<span class="navbar-center" style="display: flex; align-items: center;">
+							<img style="display: inline-block; margin-top: -4px;" src="/assets/political_analyzer.png"></img>
+							<span class="title">Political Analyzer</span>
+						</span>
+						
+					</div>
+					<div class="gradient"></div>
+					<div class="gradient2"></div>
+			</nav>
+<!-- 			<div style="position: relative;">
+				<div class="headImage">
+
+				</div>
+				<div class="gradient"></div>
+				<div class="gradient2"></div>
+			</div> -->
+			<!-- <h1>Political Analyzer</h1> -->
+			<div class="container-fluid">
+				<h5>Placeholder description</h5>
+				<button class="btn btn-primary" id="alertButton">Import Data</button>
+				<button class="btn btn-primary" id="historyButton">Chrome History</button>
+				<button class="btn btn-primary" ng-click="plotWords()">Word Cloud</button>
+				<button class="btn btn-primary" ng-click="classify()">Classify</button>
+
+			</div>
+
+			<div class="container-fluid">
+				<h4> Results </h4>
+
+				<div class="row" ng-show="data.show">
+					<div class="col-sm-3 col-sm-offset-1">
+						<h5>The words you see the most in your browser...</h5>
+						<p>
+							These words are signifcant words, words that aren't to rare but are infrequent enough that they have some meaning to the text they came from. As more people submit their histories and feeds, these words will improve, and better assess the meaning of what you see!
+						</p>
+					</div>
+					<div class="col-sm-7">
+						<div id='wordcloud'></div>
+					</div>
+				</div>
+				<div style="text-align: center;">
+				<div class="lds-ellipsis" ng-show="data.wording"><div></div><div></div><div></div><div></div></div>
+				</div>
+			</div>
+ 			<div class="container-fluid" ng-show="data.result">
+				<div class="row">
+					<div class="col-sm-3 col-sm-offset-1">
+
+						<div id="chart"></div>
+					</div>
+					<div class="col-sm-5">
+						<h4>
+							Summary of classification
+						</h4>
+						<p>
+							The following percentages do not capture the intensity in which each website belongs to a dataset. This is simply the aggregate scores of your browsing history. We will be adding google sentiment analysis to our classifier to throw out items that only weakly belong to a class. We will also be adding an exclusion stemmer to our data preprocessing, which will get rid of words with document frequency that is equal in each class. (Origins, convote dataset)
+						</p>
+						<div ng-repeat="x in data.result">
+							<h5>{{x.type}}: {{x.value.toFixed(2)}}%</h5>
+						</div>
+		 			</div>
+	 			</div> 
+			</div>
+			<div style="text-align: center;">
+				<div class="lds-ellipsis" ng-show="data.classifying"><div></div><div></div><div></div><div></div></div>
+			</div>
+		</div>
 	</body>
-	<script src='js/index.js'></script>
 </html>

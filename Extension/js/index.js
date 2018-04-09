@@ -5,6 +5,7 @@ function onExecuted(result) {
 function onError(error) {
   console.log("Error");
 }
+console.log("Starting")
 
 function executeScript (tab) {
 	
@@ -14,28 +15,32 @@ function executeScript (tab) {
 			console.log(tab.id)
 			chrome.tabs.executeScript(
 				tab.id,
-				{file: "js/historyTwitter.js"}),
-				function(result) {
+				{file: "js/historyTwitter.js"},
+				async function(result) {
+					console.log("resssss")
 					console.log(result)
-				}
+					console.log(typeof(result[0]))
+					var x = await result[0]
+					console.log(x)
+				});
 		}, 5000);
 	})
 
-	chrome.tabs.create({url: "https://facebook.com", active: false}, function(tab) {
+	// chrome.tabs.create({url: "https://facebook.com", active: false}, function(tab) {
 
-		setTimeout(function () {
-			console.log(tab.id)
-			chrome.tabs.executeScript(
-				tab.id,
-				{file: "js/historyFacebook.js"},
-				function(result){
-					console.log(result);
-				}
-			);
-			console.log("exec")
-		}, 5000);
+	// 	setTimeout(function () {
+	// 		console.log(tab.id)
+	// 		chrome.tabs.executeScript(
+	// 			tab.id,
+	// 			{file: "js/historyFacebook.js"},
+	// 			function(result){
+	// 				console.log(result);
+	// 			}
+	// 		);
+	// 		console.log("exec")
+	// 	}, 5000);
 
-	})
+	// })
 
 }
 
@@ -80,6 +85,200 @@ var executeHistory = function(){
 
 window.onload = function() {
 	console.log("HI")
-    	document.getElementById('alertButton').addEventListener('click', executeScript);
-		document.getElementById('historyButton').addEventListener('click', executeHistory);
+     	document.getElementById('alertButton').addEventListener('click', executeScript);
+		 document.getElementById('historyButton').addEventListener('click', executeHistory);
 }
+
+
+
+
+
+var app = angular.module("myApp", []);
+
+app.controller("page", ['$scope', function($scope) {
+
+	$scope.data = {};
+
+
+	$scope.plotWords = function() {
+		$scope.data.wording = true;
+		$.ajax({
+			type: "POST",
+			url: "http://localhost:5000/words",
+			data: {
+			},
+			dataType: 'json',
+			success: function(result) {
+				console.log(result)
+				if("Error" in result) {
+					alert(result);
+					return;
+				} 
+				d3.wordcloud()
+		        .size([700, 300])
+		        .selector('#wordcloud')
+		        .scale('linear')
+		        .words(result.result)
+		        .start();
+		        $scope.data.wording = false;
+		        $scope.data.show = true;
+		        $scope.$apply()
+			},
+			failure: function(err, result) {
+				console.log(err)
+			},
+			cache: false
+		})	
+
+	}
+
+
+	$scope.donut = function(result) {
+		dataset = result;
+	// 	var dataset = [
+	//     { type: 'IE', value: 39.10 },
+	//     { type: 'Chrome', value: 32.51 },
+	//     { type: 'Safari', value: 13.68 },
+	//     { type: 'Firefox', value: 8.71 },
+	//     { type: 'Others', value: 6.01 }
+	// ];
+ 
+var pie=d3.layout.pie()
+  .value(function(d){return d.value})
+  .sort(null)
+  //.padAngle(.03);
+ 
+var w=300,h=300;
+ 
+var outerRadius=w/2;
+var innerRadius=100;
+ 
+var color = d3.scale.category10();
+ 
+var arc=d3.svg.arc()
+  .outerRadius(outerRadius)
+  .innerRadius(innerRadius);
+ 
+var svg=d3.select("#chart")
+  .append("svg")
+  .attr({
+      width:w,
+      height:h,
+      class:'shadow'
+  }).append('g')
+  .attr({
+      transform:'translate('+w/2+','+h/2+')'
+  });
+var path=svg.selectAll('path')
+  .data(pie(dataset))
+  .enter()
+  .append('path')
+  .attr({
+      d:arc,
+      fill:function(d,i){
+          return color(d.data.type);
+      }
+  });
+ 
+path.transition()
+  .duration(1000)
+  .attrTween('d', function(d) {
+      var interpolate = d3.interpolate({startAngle: 0, endAngle: 0}, d);
+      return function(t) {
+          return arc(interpolate(t));
+      };
+  });
+ 
+ 
+var restOfTheData=function(){
+    var text=svg.selectAll('text')
+	        .data(pie(dataset))
+	        .enter()
+	        .append("text")
+	        .transition()
+	        .duration(200)
+	        .attr("transform", function (d) {
+	            return "translate(" + arc.centroid(d) + ")";
+	        })
+	        .attr("dy", ".4em")
+	        .attr("text-anchor", "middle")
+	        .text(function(d){
+	            return d.data.value.toFixed(1)+"%";
+	        })
+	        .style({
+	            fill:'#fff',
+	            'font-size':'10px'
+	        });
+	 
+	    var legendRectSize=20;
+	    var legendSpacing=7;
+	    var legendHeight=legendRectSize+legendSpacing;
+	 
+	 
+	    var legend=svg.selectAll('.legend')
+	        .data(color.domain())
+	        .enter()
+	        .append('g')
+	        .attr({
+	            class:'legend',
+	            transform:function(d,i){
+	                //Just a calculation for x & y position
+	                return 'translate(-35,' + ((i*legendHeight)-65) + ')';
+	            }
+	        });
+	    legend.append('rect')
+	        .attr({
+	            width:legendRectSize,
+	            height:legendRectSize,
+	            rx:20,
+	            ry:20
+	        })
+	        .style({
+	            fill:color,
+	            stroke:color
+	        });
+	 
+	    legend.append('text')
+	        .attr({
+	            x:30,
+	            y:15
+	        })
+	        .text(function(d){
+	            return d;
+	        }).style({
+	            fill:'#929DAF',
+	            'font-size':'14px'
+	        });
+	};
+	 
+	setTimeout(restOfTheData,1000);
+	}
+	//$scope.donut();
+
+	$scope.classify = function() {
+		$scope.data.classifying = true;
+		$.ajax({
+			type: "POST",
+			url: "http://localhost:5000/classify",
+			data: {
+			},
+			dataType: 'json',
+			success: function(result) {
+				console.log(result)
+				if("Error" in result) {
+					alert(result);
+					return;
+				} 
+				$scope.data.classifying= false;
+				$scope.data.result = result.result;
+				$scope.donut(result.result);
+		        $scope.$apply()
+			},
+			failure: function(err, result) {
+				console.log(err)
+			},
+			cache: false
+		})	
+
+	}
+}]);

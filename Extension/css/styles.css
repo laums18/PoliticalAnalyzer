@@ -1,0 +1,145 @@
+:root {
+  --gunmetal: #2a3439;
+  --charcoal: #36454f;
+  --main-bg-color: rgba(246,248,247,1);
+  --off-bg-color: white;
+  --highlight: #286090;
+  --highlight-secondary: #179AB9;
+  --off-bg-text-color: black;
+  --text-h: #e3edf9;
+}
+
+
+#page, body{
+	background-color: var(--main-bg-color);
+	height: 100%;
+  font-family: "Segoe UI", sans-serif !important;
+}
+
+.navbar-center > img {
+	float: left;
+	height: 50px;
+  margin-left: 30px;
+	width: auto;
+}
+
+ .title {
+  font-size: 42px; 
+  letter-spacing: 2px; 
+  line-height: 60px; 
+  font-weight: 600; 
+  font-family: "Segoe UI", sans-serif;
+  color: back;
+  display: inline-block;
+  margin-left: 20px;
+ }
+
+.headImage {
+	background-image: url("/assets/back.png");
+	background-size: 40%;
+    background-repeat: repeat;
+    background-opacity: 40%;
+    width: 100%;
+    height: 60px;
+    position: relative;
+}
+
+
+.gradient {
+	position: absolute;
+    z-index:2;
+    right:0; top:0; left:0;
+    height:50px;
+    background: linear-gradient(to bottom,  rgba(246,248,247,1) ,rgba(246,248,247,.7));
+}
+
+.gradient2 {
+	position: absolute;
+    z-index:2;
+    right:0; top:50px; left:0;
+    height:50px;
+    background: linear-gradient(to bottom,  rgba(246,248,247,.7) ,rgba(246,248,247,1));
+
+}
+
+.navbar, .navbar-default{
+	/*background-color: #f7d117;
+	border-color: #b19406;*/
+	background-color: rgba(246,248,247,1);
+
+		background-image: url("/assets/back3.jpg");
+	background-size: 20%;
+    background-repeat: repeat;
+    background-opacity: 40%;
+    padding-bottom: 40px;
+
+	/*box-shadow: #656565 0px 0px 8px;*/
+	border-width: 0px;
+	border-radius: 0px;
+	border: none;
+	font-family: "Segoe UI", sans-serif;
+ 	font-weight: 700 !important;
+ 	color: #565656;
+}
+
+
+.navbar {
+	padding-bottom: 5px;
+	margin-bottom: 0px;
+}
+
+.lds-ellipsis {
+  display: inline-block;
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+.lds-ellipsis div {
+  position: absolute;
+  top: 27px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #676767;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+.lds-ellipsis div:nth-child(1) {
+  left: 6px;
+  animation: lds-ellipsis1 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(2) {
+  left: 6px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(3) {
+  left: 26px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(4) {
+  left: 45px;
+  animation: lds-ellipsis3 0.6s infinite;
+}
+@keyframes lds-ellipsis1 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes lds-ellipsis3 {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+@keyframes lds-ellipsis2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(19px, 0);
+  }
+}
