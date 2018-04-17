@@ -8,6 +8,13 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 import pandas as pd
 import os
+from bs4 import BeautifulSoup, SoupStrainer
+from pymongo import MongoClient
+import re
+
+client = MongoClient()
+client = MongoClient('localhost', 27017)
+db = client['web_history_data']
 
 target = []
 docs = []
@@ -29,8 +36,7 @@ classifier = MultinomialNB().fit(convote_word_vectors, target)
 
 app = Flask(__name__)
 
-
-def get_chrome_text():
+def loadDB():
     chromeData = json.load(open('chromeHistory.json', encoding="utf8"))
     h = html2text.HTML2Text()
 
@@ -41,18 +47,59 @@ def get_chrome_text():
     h.skip_internal_links = True
 
     website_text = []
+
     for link in chromeData:
         try:
+            child_links = []
             if link['url'][:4] == 'http':
                 html = requests.get(link['url'])
                 html = html.text
                 website_text.append([link['url'],
                                      h.handle(html).strip()])
-                #print(website_text)
+            
+            soup = BeautifulSoup(html)
+            for childLink in soup.findAll('a'):
+                if childLink.get('href')[:4] == 'http':
+                    child_links.append(childLink.get('href'))
+
+            update_query = {'parent_url': link['url']}
+           
+            post_data = {
+                'parent_url': link['url'],
+                'parent_text': h.handle(html).strip(),
+                'child_links': child_links
+                }
+
+            result = db.webtext.update(update_query, post_data, upsert=True)
+
+            print(result)
         except Exception as e:
             print(e)
 
     return website_text
+
+def get_parent_urls():
+    
+    output_array = []
+
+    cursor1 = db.webtext.find()
+    for record in cursor1:
+        output_array.append([record["parent_url"],
+                record["parent_text"]])
+
+    return output_array
+
+
+def get_child_urls():
+    
+    output_array = []
+
+    # cursor1 = db.webtext.find()
+    # for record in cursor1:
+    #     output_array.append([record["parent_url"],
+    #             record["parent_text"]])
+
+    return output_array
 
 
 @app.route('/')
@@ -66,7 +113,7 @@ def graph_words():
     try:
         # with open("parsed.txt") as f:
         #     docs = json.loads(f.read())["results"]
-        docs = get_chrome_text()
+        docs = get_parent_urls()
         vectorizer = TfidfVectorizer(stop_words='english', min_df=1,max_df=0.8)
         word_vectors = vectorizer.fit_transform([x[0] for x in docs if len(x[0]) > 100])
 
@@ -89,9 +136,10 @@ def graph_words():
     except Exception as e:
         return jsonify(dict(Error=str(e)))
 
+
 @app.route('/classify', methods=["POST"])
 def classify():
-    hist = get_chrome_text()
+    hist = get_parent_urls()
 
     vecs = convote_vectorizer.transform([x[1] for x in hist if len(x[1]) > 50])
     pred = classifier.predict(vecs)
@@ -108,36 +156,9 @@ def classify():
     totals = [{"type": x[0], "value": float(x[1]) / total_prob * 100} for x in totals]
 
     return jsonify(dict(result=totals))
-# @app.route('/words')
-# def graph_words():
-#     try:
-#         print("test")
-#         website_text = get_chrome_text()
-#         print("Done")
-
-#     except Exception as e:
-#         print(str(e))
-#         pass
-
-#     #return render_template('output.html')
-#     return render_template('wordgraph.html', website_text=website_text )
-
-# @app.route('/numbers')
-# def graph_numbers():
-#     try:
-#         print("test")
-#         website_text = get_chrome_text()
-#         print("Done")
-
-#     except Exception as e:
-#         print(str(e))
-#         pass
-
-#     #return render_template('output.html')
-#     return render_template('circlechart.html', website_text=website_text )
 
 
 if __name__ == "__main__":
+    loadDB()
     app.run()
-
-
+    
