@@ -7,5 +7,26 @@
       "default_popup": "popup.html",
       "default_icon": "political_analyzer.png"
     },
-    "permissions": ["tabs", "history", "https://*.facebook.com/*", "storage", "*://*/*", "http://*/*", "https://*/*"]
+
+    "background":{
+    "scripts": ["/js/jquery.min.js", "background.js"],
+    "persistent": true,
+    "pages": [
+          "http://*/*", 
+          "https://*/*"]
+    },
+
+    "content_security_policy": "script-src 'self' https://127.0.0.1:5000/receiver; object-src 'self'",
+
+    "permissions": [
+          "tabs", 
+          "history", 
+          "https://*.facebook.com/*", 
+          "storage", 
+          "*://*/*", 
+          "http://*/*", 
+          "https://*/*",
+          "https://127.0.0.1:5000/*"
+      ]
+
   }
