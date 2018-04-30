@@ -280,6 +280,7 @@ def classifyForIcon():
 
     return totals
 
+
 def classifyForDB(parent_data):
     hist = parent_data
 
@@ -298,6 +299,7 @@ def classifyForDB(parent_data):
     totals = [{"type": x[0], "value": float(x[1]) / total_prob * 100} for x in totals]
 
     return totals
+
 
 if __name__ == "__main__":
     app.run(threaded=True)

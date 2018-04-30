@@ -43,6 +43,7 @@ chrome.tabs.onUpdated.addListener(function(id, info, tab) {
         	data = JSON.stringify(data.result)
         	value = parseInt(data)
         	data = value.toFixed(0).toString()
+
             chrome.browserAction.setBadgeText({text: data})
 			
 			if(value > 2)
