@@ -56,6 +56,7 @@ def loadDB(link):
         if link[:4] == 'http':
             html = requests.get(link)
             html = html.text
+            parent_html = str(html);
             website_text.append([link, h.handle(html).strip()])
         
         soup = BeautifulSoup(html, "html.parser")
@@ -68,6 +69,7 @@ def loadDB(link):
         post_data = {
             'parent_url': link,
             'parent_text': h.handle(html).strip(),
+            'parent_html': parent_html,
             'classify_data': class_data,
             'child_links': child_links
             }
@@ -101,6 +103,7 @@ def initialLoadDB(history):
                 if link['url'][:4] == 'http':
                     html = requests.get(link['url'])
                     html = html.text
+                    parent_html = str(html);
                     website_text.append([link['url'],
                                          h.handle(html).strip()])
                 
@@ -114,6 +117,7 @@ def initialLoadDB(history):
                 post_data = {
                     'parent_url': link['url'],
                     'parent_text': h.handle(html).strip(),
+                    'parent_html': parent_html,
                     'classify_data': class_data,
                     'child_links': child_links
                     }
