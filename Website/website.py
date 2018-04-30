@@ -36,8 +36,54 @@ classifier = MultinomialNB().fit(convote_word_vectors, target)
 
 app = Flask(__name__)
 
-def loadDB():
-    chromeData = json.load(open('chromeHistory.json', encoding="utf8"))
+
+def loadDB(link):
+
+    h = html2text.HTML2Text()
+    link = link[0]
+    print(link)
+
+    # Ignore converting links from HTML
+    h.ignore_links = True
+    h.ignore_images = True
+    h.ignore_anchors = True
+    h.skip_internal_links = True
+
+    website_text = []
+
+    try:
+        child_links = []
+        if link[:4] == 'http':
+            html = requests.get(link)
+            html = html.text
+            website_text.append([link, h.handle(html).strip()])
+        
+        soup = BeautifulSoup(html, "html.parser")
+        for childLink in soup.findAll('a'):
+            if childLink.get('href')[:4] == 'http':
+                child_links.append(childLink.get('href'))
+
+        update_query = {'parent_url': link}
+        class_data = classifyForDB(website_text)
+        post_data = {
+            'parent_url': link,
+            'parent_text': h.handle(html).strip(),
+            'classify_data': class_data,
+            'child_links': child_links
+            }
+
+        result = db.webtext.update(update_query, post_data, upsert=True)
+        print(result)
+
+    except Exception as e:
+        print(e)
+
+    return website_text
+
+
+def initialLoadDB(history):
+
+    chromeData = history
     h = html2text.HTML2Text()
 
     # Ignore converting links from HTML
@@ -50,33 +96,41 @@ def loadDB():
 
     for link in chromeData:
         try:
-            child_links = []
-            if link['url'][:4] == 'http':
-                html = requests.get(link['url'])
-                html = html.text
-                website_text.append([link['url'],
-                                     h.handle(html).strip()])
-            
-            soup = BeautifulSoup(html)
-            for childLink in soup.findAll('a'):
-                if childLink.get('href')[:4] == 'http':
-                    child_links.append(childLink.get('href'))
+            if(db.webtext.find({"parent_url": link['url']}).count() == 0):
+                child_links = []
+                if link['url'][:4] == 'http':
+                    html = requests.get(link['url'])
+                    html = html.text
+                    website_text.append([link['url'],
+                                         h.handle(html).strip()])
+                
+                soup = BeautifulSoup(html, "html.parser")
+                for childLink in soup.findAll('a'):
+                    if childLink.get('href')[:4] == 'http':
+                        child_links.append(childLink.get('href'))
 
-            update_query = {'parent_url': link['url']}
-           
-            post_data = {
-                'parent_url': link['url'],
-                'parent_text': h.handle(html).strip(),
-                'child_links': child_links
-                }
+                update_query = {'parent_url': link['url']}
+                class_data = classifyForDB(website_text)
+                post_data = {
+                    'parent_url': link['url'],
+                    'parent_text': h.handle(html).strip(),
+                    'classify_data': class_data,
+                    'child_links': child_links
+                    }
 
-            result = db.webtext.update(update_query, post_data, upsert=True)
+                result = db.webtext.update(update_query, post_data, upsert=True)
 
-            print(result)
+                print(result)
+            else:
+                print("Getting initial Chrome History")
+                continue
+
         except Exception as e:
             print(e)
 
+
     return website_text
+
 
 def get_parent_urls():
     
@@ -101,11 +155,60 @@ def get_child_urls():
 
     return output_array
 
+def checkBiasNum():
+
+    #[{'type': 'DN', 'value': 48.99883598238837}, {'type': 'RY', 'value': 48.09736113652237}, {'type': 'DY', 'value': 1.7911670583166328}, {'type': 'RN', 'value': 0.9558035562277896}, {'type': 'IN', 'value': 0.082712215167099}, {'type': 'IY', 'value': 0.07412005137773517}]
+    # -10 is Dem, +10 is Repub, 0 is Indep
+
+    totals = classifyForIcon()
+    dem_no = totals[0]['value']
+    rep_yes = totals[1]['value']
+    dem_yes = totals[2]['value']
+    rep_no = totals[3]['value']
+    ind_no = totals[4]['value']
+    ind_yes = totals[5]['value']
+
+    right_lean = dem_no + rep_yes + ind_no
+    left_lean = dem_yes + rep_no + ind_no
+    indep = ind_yes
+
+    if((right_lean > left_lean) and (right_lean > indep)):
+        output = right_lean / 10
+    elif((left_lean > right_lean) and (left_lean > indep)):
+        output = -(left_lean / 10)
+    elif((indep > right_lean) and (indep > indep)):
+        output = indep / 10
+
+    return output
+
 
 @app.route('/')
 def index():
 
     return "Hello, World"
+
+
+@app.route('/receiver', methods = ['POST'])
+def receiver():
+    
+    newLink = json.loads(request.form.get("history", "[]"))
+    
+    if(db.webtext.find({"parent_url": newLink}).count() == 0):
+        history = json.loads(request.form.get("history", "[]"))
+        loadDB(history)
+    
+    biasNum = checkBiasNum()
+    print(biasNum)
+    return jsonify(dict(result = biasNum))
+
+
+@app.route('/initialUpdate', methods = ['POST'])
+def initialUpdate():
+        
+    history = json.loads(request.form.get("history", "[]"))
+    print(history)
+    initialLoadDB(history)
+    return jsonify(dict(result = "success"))
 
 
 @app.route('/words', methods=["POST"])
@@ -145,10 +248,10 @@ def classify():
     pred = classifier.predict(vecs)
     prob = classifier.predict_proba(vecs)
     counts = prob.sum(axis=0)
-    print(counts)
-    print(counts.shape)
+    #print(counts)
+    #print(counts.shape)
     totals = []
-    print(counts[0])
+    #print(counts[0])
     for i in range(counts.shape[0]):
         totals.append([classes[i], counts[i]])
     totals = sorted(totals, key=lambda x: x[1])[::-1]
@@ -158,7 +261,44 @@ def classify():
     return jsonify(dict(result=totals))
 
 
+def classifyForIcon():
+    hist = get_parent_urls()
+
+    vecs = convote_vectorizer.transform([x[1] for x in hist if len(x[1]) > 50])
+    pred = classifier.predict(vecs)
+    prob = classifier.predict_proba(vecs)
+    counts = prob.sum(axis=0)
+    #print(counts)
+    #print(counts.shape)
+    totals = []
+    #print(counts[0])
+    for i in range(counts.shape[0]):
+        totals.append([classes[i], counts[i]])
+    totals = sorted(totals, key=lambda x: x[1])[::-1]
+    total_prob = sum([x[1] for x in totals])
+    totals = [{"type": x[0], "value": float(x[1]) / total_prob * 100} for x in totals]
+
+    return totals
+
+def classifyForDB(parent_data):
+    hist = parent_data
+
+    vecs = convote_vectorizer.transform([x[1] for x in hist if len(x[1]) > 50])
+    pred = classifier.predict(vecs)
+    prob = classifier.predict_proba(vecs)
+    counts = prob.sum(axis=0)
+    #print(counts)
+    #print(counts.shape)
+    totals = []
+    #print(counts[0])
+    for i in range(counts.shape[0]):
+        totals.append([classes[i], counts[i]])
+    totals = sorted(totals, key=lambda x: x[1])[::-1]
+    total_prob = sum([x[1] for x in totals])
+    totals = [{"type": x[0], "value": float(x[1]) / total_prob * 100} for x in totals]
+
+    return totals
+
 if __name__ == "__main__":
-    loadDB()
-    app.run()
+    app.run(threaded=True)
     

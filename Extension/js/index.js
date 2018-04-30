@@ -63,34 +63,40 @@ function executeTwitter() {
 
 var executeHistory = function(){
 
-  var myObject = []
+  chrome.history.search({"text": "", "startTime": 0 , "maxResults": 1000000000}, function callback(results) {
 
-  chrome.history.search({"text": "", "maxResults": 1000000000}, function callback(results) {
-
-	for(var i = 0; i < results.length; i++) {
-       myObject[i] = results[i].url;
-	}
 	var json= JSON.stringify(results);
 	console.log(JSON.parse(json));
-	var vLink = document.createElement('a'),
-	vBlob = new Blob([json], {type: "octet/stream"}),
-	vName = 'chromeHistory.json',
-	vUrl = window.URL.createObjectURL(vBlob);
-	vLink.setAttribute('href', vUrl);
-	vLink.setAttribute('download', vName );
-	vLink.click();
-}) 
+
+
+   var qurl="http:127.0.0.1:5000/receiver";
+   $.ajax({
+            type: "POST",
+            cache: false,
+            data: {
+            	history: json
+            },
+            url: qurl,
+            dataType: "json",
+            success: function(data) { 
+                console.log(data);                    
+            },
+            failure: function(error) {
+                alert("error: " + error.status);
+                console.log(error);
+            }
+        })
+
+
+	}) 
 }
 
 
 window.onload = function() {
 	console.log("HI")
      	document.getElementById('alertButton').addEventListener('click', executeScript);
-		 document.getElementById('historyButton').addEventListener('click', executeHistory);
+		document.getElementById('historyButton').addEventListener('click', executeHistory);
 }
-
-
-
 
 
 var app = angular.module("myApp", []);
