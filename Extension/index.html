@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title> Bias Analyzer</title>
+		<title> Perspective </title>
 		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 		<script src="/js/jquery.min.js"></script>
 		<link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -13,12 +13,12 @@
 		<script src='js/index.js'></script>
 	</head>
 	<body>
-		<div ng-app="myApp" ng-controller="page">
+		<div ng-app="myApp" ng-controller="page" >
 			<nav class="navbar navbar-default" style="display: flex; align-items: center; padding: 0px; padding-bottom: 40px; width: 100%;text-align: center;">
 					<div class="navbar-header" style="z-index: 4;">
 						<span class="navbar-center" style="display: flex; align-items: center;">
 							<img style="display: inline-block; margin-top: -4px;" src="/assets/political_analyzer.png"></img>
-							<span class="title">Political Analyzer</span>
+							<span class="title">Perspective</span>
 						</span>
 						
 					</div>
@@ -35,18 +35,20 @@
 			<!-- <h1>Political Analyzer</h1> -->
 			<div class="container-fluid">
 				<h5>Placeholder description</h5>
-				<button class="btn btn-primary" id="alertButton">Import Data</button>
-				<button class="btn btn-primary" id="historyButton">Chrome History</button>
-				<button class="btn btn-primary" ng-click="plotWords()">Word Cloud</button>
-				<button class="btn btn-primary" ng-click="classify()">Classify</button>
-				<button class="btn btn-primary" ng-click="loadDB()">Load DB</button>
+				<button class="btn btn-secondary" id="alertButton">Import Data</button>
+				<button class="btn btn-secondary" id="historyButton">Chrome History</button>
+				<button class="btn btn-secondary" ng-click="plotWords()">Word Cloud</button>
+				<button class="btn btn-secondary" ng-click="classify()">Classify</button>
+				<button class="btn btn-secondary" ng-click="sentiment()">Sentiment</button>
+				<button class="btn btn-secondary" ng-click="loadDB()">Load DB</button>
+
 
 			</div>
 
 			<div class="container-fluid">
 				<h4> Results </h4>
 
-				<div class="row" ng-show="data.show">
+				<div class="row" ng-show="data.show" style="text-align: center;">
 					<div class="col-sm-3 col-sm-offset-1">
 						<h5>The words you see the most in your browser...</h5>
 						<p>
@@ -62,12 +64,12 @@
 				</div>
 			</div>
  			<div class="container-fluid" ng-show="data.result">
-				<div class="row">
-					<div class="col-sm-3 col-sm-offset-1">
+				<div class="row"  style="text-align: center;">
+					<div class="col-sm-3 col-sm-offset-1" style="text-align: center;">
 
-						<div id="chart"></div>
+						<div id="drdonut"></div>
 					</div>
-					<div class="col-sm-5">
+					<div class="col-sm-5 col-sm-offset-1">
 						<h4>
 							Summary of classification
 						</h4>
@@ -82,6 +84,28 @@
 			</div>
 			<div style="text-align: center;">
 				<div class="lds-ellipsis" ng-show="data.classifying"><div></div><div></div><div></div><div></div></div>
+			</div>
+			<div class="container-fluid" ng-show="data.result2">
+				<div class="row"  style="text-align: center;">
+					<div class="col-sm-3 col-sm-offset-1" style="text-align: center;">
+
+						<div id="sentdonut"></div>
+					</div>
+					<div class="col-sm-5 col-sm-offset-1">
+						<h4>
+							Summary of sentiment analysis
+						</h4>
+						<p>
+							Insert here
+						</p>
+						<div ng-repeat="x in data.result2">
+							<h5>{{x.type}}: {{x.value.toFixed(2)}}%</h5>
+						</div>
+		 			</div>
+	 			</div> 
+			</div>
+			<div style="text-align: center;">
+				<div class="lds-ellipsis" ng-show="data.senting"><div></div><div></div><div></div><div></div></div>
 			</div>
 		</div>
 	</body>

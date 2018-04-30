@@ -139,7 +139,7 @@ app.controller("page", ['$scope', function($scope) {
 	}
 
 
-	$scope.donut = function(result) {
+	$scope.donut = function(ele, result) {
 		dataset = result;
 	// 	var dataset = [
 	//     { type: 'IE', value: 39.10 },
@@ -164,9 +164,10 @@ var color = d3.scale.category10();
 var arc=d3.svg.arc()
   .outerRadius(outerRadius)
   .innerRadius(innerRadius);
- 
-var svg=d3.select("#chart")
+ d3.select("#" + ele + "1567").remove()
+var svg=d3.select("#" + ele)
   .append("svg")
+  .attr("id", ele + "1567")
   .attr({
       width:w,
       height:h,
@@ -175,14 +176,16 @@ var svg=d3.select("#chart")
   .attr({
       transform:'translate('+w/2+','+h/2+')'
   });
+  console.log(dataset)
+  console.log(pie(dataset))
 var path=svg.selectAll('path')
   .data(pie(dataset))
   .enter()
   .append('path')
   .attr({
       d:arc,
-      fill:function(d,i){
-          return color(d.data.type);
+      fill:function(d){
+          return d.data.color;
       }
   });
  
@@ -222,7 +225,7 @@ var restOfTheData=function(){
 	 
 	 
 	    var legend=svg.selectAll('.legend')
-	        .data(color.domain())
+	        .data(dataset)
 	        .enter()
 	        .append('g')
 	        .attr({
@@ -240,8 +243,8 @@ var restOfTheData=function(){
 	            ry:20
 	        })
 	        .style({
-	            fill:color,
-	            stroke:color
+	            fill: function(d) {return d.color},
+	            stroke: function(d) {return d.color}
 	        });
 	 
 	    legend.append('text')
@@ -250,7 +253,7 @@ var restOfTheData=function(){
 	            y:15
 	        })
 	        .text(function(d){
-	            return d;
+	            return d.type;
 	        }).style({
 	            fill:'#929DAF',
 	            'font-size':'14px'
@@ -277,7 +280,7 @@ var restOfTheData=function(){
 				} 
 				$scope.data.classifying= false;
 				$scope.data.result = result.result;
-				$scope.donut(result.result);
+				$scope.donut("drdonut", result.result);
 		        $scope.$apply()
 			},
 			failure: function(err, result) {
@@ -285,6 +288,31 @@ var restOfTheData=function(){
 			},
 			cache: false
 		})	
+	}
 
+	$scope.sentiment = function() {
+		$scope.data.senting = true;
+		$.ajax({
+			type: "POST",
+			url: "http://localhost:5000/sentiment",
+			data: {
+			},
+			dataType: 'json',
+			success: function(result) {
+				console.log(result)
+				if("Error" in result) {
+					alert(result);
+					return;
+				} 
+				$scope.data.senting = false;
+				$scope.data.result2 = result.result;
+				$scope.donut("sentdonut", result.result);
+		        $scope.$apply()
+			},
+			failure: function(err, result) {
+				console.log(err)
+			},
+			cache: false
+		})	
 	}
 }]);

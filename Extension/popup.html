@@ -10,11 +10,28 @@
 		<script src="js/lib/d3/d3.js"></script>
      	<script src="js/lib/d3/d3.layout.cloud.js"></script>
     	<script src="js/d3.wordcloud.js"></script> 
-		<script src='js/index.js'></script>
+    	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- 		<script src='js/index.js'></script> -->
 		<script src="popup.js"></script>
 	</head>
-	<body ng-app="myApp" ng-controller="page">
+	<body ng-app="myApp" ng-controller="page" style="width: 250px; color: #888; height: 400px;text-align: center;">
+		<div ng-show="data.loading == 0" style="font-size: 30px; color: #888; text-align: center;">
+			<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+				</div>
+		</div>
+		<div ng-show="data.loading == 1" style="font-size: 15px; color: #888; text-align: center;">
+			{{data.error}}
+		</div>
+		<div id="charts" ng-show="data.loading == 2" style="font-size: 30px; text-align: center;">
+			<h4>Current Page Bias</h4>
+			<h5 style="margin-top: 8px;">Sentiment</h5>
+			<div id="sentimentgauge"></div>
+			<small class="form-text text-muted" style="font-size: 10px">The magnitude of a sentiment shows the over polatiry of a document. A magnitude 0f 10-20 usually means there is something substantial.A low sentiment, and high magnitude means there was a lot of positive and negative things. A high sentiment score and high magnitude shoes a biased argument</small>
+			<h5 style="margin-top: 8px;">Political Bias</h5>
+			<div id="drgauge"></div>
+			<small class="form-text text-muted" style="font-size: 10px">The pages political leaning. This number only shows which group a page is more likely belong to, not that it necesarily belongs to it. 50/50 could be an unbiased page, or a page that had a lot of arguments from each side.</small>
+		</div>
 
-		<button class="btn btn-primary" ng-click="openTab()">Go To Main Page</button>
+		<button class="btn btn-secondary" ng-click="openTab()">See your overall perspective</button>
 	</body>
 </html>

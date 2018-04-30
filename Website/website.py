@@ -11,6 +11,7 @@ import os
 from bs4 import BeautifulSoup, SoupStrainer
 from pymongo import MongoClient
 import re
+import sentiment
 
 client = MongoClient()
 client = MongoClient('localhost', 27017)
@@ -22,14 +23,14 @@ for file in os.listdir("training_set"):
     with open("./training_set/" + file) as f:
         docs.append(f.read())
     target.append(file.split("_")[-1])
-target = [tar[0] + tar[2] for tar in target]
+target = [tar[0] for tar in target]
 # print(len(target))
 # print(sum([1 if x == "R" else 0 for x in target]))
 classes = set()
 for t in target:
     classes.add(t)
 classes = sorted(list(classes))
-convote_vectorizer = TfidfVectorizer(stop_words='english', min_df=2,max_df=0.8, ngram_range=(1,8))
+convote_vectorizer = TfidfVectorizer(stop_words='english', min_df=0,max_df=0.8, ngram_range=(1,8))
 convote_word_vectors = convote_vectorizer.fit_transform(docs)
 classifier = MultinomialNB().fit(convote_word_vectors, target)
 
@@ -57,7 +58,7 @@ def loadDB(link):
             html = requests.get(link)
             html = html.text
             parent_html = str(html);
-            website_text.append([link, h.handle(html).strip()])
+            website_text.append([link, h.handle(html).strip().replace("\n", " ")])
         
         soup = BeautifulSoup(html, "html.parser")
         for childLink in soup.findAll('a'):
@@ -84,7 +85,6 @@ def loadDB(link):
 
 
 def initialLoadDB(history):
-
     chromeData = history
     h = html2text.HTML2Text()
 
@@ -98,43 +98,104 @@ def initialLoadDB(history):
 
     for link in chromeData:
         try:
-            if(db.webtext.find({"parent_url": link['url']}).count() == 0):
+            if "google.com" in link['url'] or "slack.com" in link['url']:
+                continue
+            query = db.webtext.find({"parent_url": link['url']})
+            if(query.count() == 0):
                 child_links = []
                 if link['url'][:4] == 'http':
                     html = requests.get(link['url'])
                     html = html.text
                     parent_html = str(html);
-                    website_text.append([link['url'],
-                                         h.handle(html).strip()])
+                    plain_text = h.handle(html).strip()
+                else: 
+                    continue
                 
                 soup = BeautifulSoup(html, "html.parser")
+                children = set()
                 for childLink in soup.findAll('a'):
-                    if childLink.get('href')[:4] == 'http':
-                        child_links.append(childLink.get('href'))
+                    if childLink.get('href') is not None and childLink.get('href')[:4] == 'http':
+                        if childLink.get('href').count("/") > 4 or ".html" in childLink.get('href'):
+                            children.add(childLink.get('href'))
 
                 update_query = {'parent_url': link['url']}
-                class_data = classifyForDB(website_text)
+                class_data = classifyForDB([link['url'], plain_text])
+                sent, magnitude = sentiment.analyze(plain_text)
                 post_data = {
                     'parent_url': link['url'],
-                    'parent_text': h.handle(html).strip(),
+                    'parent_text': plain_text,
                     'parent_html': parent_html,
                     'classify_data': class_data,
-                    'child_links': child_links
+                    'child_links': list(children)
                     }
 
                 result = db.webtext.update(update_query, post_data, upsert=True)
 
                 print(result)
             else:
-                print("Getting initial Chrome History")
                 continue
 
         except Exception as e:
             print(e)
 
+def getUrls(urls):
+    h = html2text.HTML2Text()
+
+    # Ignore converting links from HTML
+    h.ignore_links = True
+    h.ignore_images = True
+    h.ignore_anchors = True
+    h.skip_internal_links = True
+
+    website_text = []
+
+    for url in urls:
+        # try:
+            query = db.webtext.find({"parent_url": url})
+            if(query.count() == 0):
+                child_links = []
+                if url[:4] == 'http':
+                    html = requests.get(url)
+                    html = html.text
+                    parent_html = str(html);
+                    plain_text = h.handle(html).strip()
+                else: 
+                    continue
+                
+                soup = BeautifulSoup(html, "html.parser")
+                children = set()
+                for childLink in soup.findAll('a'):
+                    if childLink.get('href') is not None and childLink.get('href')[:4] == 'http':
+                        if childLink.get('href').count("/") > 4 or ".html" in childLink.get('href'):
+                            children.add(childLink.get('href'))
+
+                update_query = {'parent_url': url}
+                class_data = classifyForDB([url, plain_text])
+                sent, magnitude = sentiment.analyze(plain_text)
+
+                post_data = {
+                    'parent_url': url,
+                    'parent_text': plain_text,
+                    'parent_html': parent_html,
+                    'classify_data': class_data,
+                    'sentiment': sent,
+                    'magnitude': magnitude,
+                    'child_links': list(children)
+                    }
+
+                result = db.webtext.update(update_query, post_data, upsert=True)
+                result = {k : post_data[k] for k in ["classify_data", "sentiment", "magnitude"]}
+
+                website_text.append(result)
+            else:
+                data = query.next()
+                result = {k : data[k] for k in ["classify_data", "sentiment", "magnitude"]}
+                website_text.append(result)
+
+        # except Exception as e:
+        #     print(e)
 
     return website_text
-
 
 def get_parent_urls():
     
@@ -147,6 +208,15 @@ def get_parent_urls():
 
     return output_array
 
+def get_parents():
+    
+    output_array = []
+
+    cursor1 = db.webtext.find()
+    for record in cursor1:
+        output_array.append(record)
+
+    return output_array
 
 def get_child_urls():
     
@@ -159,58 +229,15 @@ def get_child_urls():
 
     return output_array
 
-def checkBiasNum():
-
-    #[{'type': 'DN', 'value': 48.99883598238837}, {'type': 'RY', 'value': 48.09736113652237}, {'type': 'DY', 'value': 1.7911670583166328}, {'type': 'RN', 'value': 0.9558035562277896}, {'type': 'IN', 'value': 0.082712215167099}, {'type': 'IY', 'value': 0.07412005137773517}]
-    # -10 is Dem, +10 is Repub, 0 is Indep
-
-    totals = classifyForIcon()
-    dem_no = totals[0]['value']
-    rep_yes = totals[1]['value']
-    dem_yes = totals[2]['value']
-    rep_no = totals[3]['value']
-    ind_no = totals[4]['value']
-    ind_yes = totals[5]['value']
-
-    right_lean = dem_no + rep_yes + ind_no
-    left_lean = dem_yes + rep_no + ind_no
-    indep = ind_yes
-
-    if((right_lean > left_lean) and (right_lean > indep)):
-        output = right_lean / 10
-    elif((left_lean > right_lean) and (left_lean > indep)):
-        output = -(left_lean / 10)
-    elif((indep > right_lean) and (indep > indep)):
-        output = indep / 10
-
-    return output
-
-
 @app.route('/')
 def index():
 
     return "Hello, World"
 
-
-@app.route('/receiver', methods = ['POST'])
-def receiver():
-    
-    newLink = json.loads(request.form.get("history", "[]"))
-    
-    if(db.webtext.find({"parent_url": newLink}).count() == 0):
-        history = json.loads(request.form.get("history", "[]"))
-        loadDB(history)
-    
-    biasNum = checkBiasNum()
-    print(biasNum)
-    return jsonify(dict(result = biasNum))
-
-
 @app.route('/initialUpdate', methods = ['POST'])
 def initialUpdate():
         
     history = json.loads(request.form.get("history", "[]"))
-    print(history)
     initialLoadDB(history)
     return jsonify(dict(result = "success"))
 
@@ -261,34 +288,58 @@ def classify():
     totals = sorted(totals, key=lambda x: x[1])[::-1]
     total_prob = sum([x[1] for x in totals])
     totals = [{"type": x[0], "value": float(x[1]) / total_prob * 100} for x in totals]
-
+    for i in range(len(totals)):
+        if totals[i]["type"] == "R":
+            totals[i]["color"] = "#E91D0E"
+        elif totals[i]["type"] == "D":
+            totals[i]["color"] = "#232066"
+        else:
+            totals[i]["color"] = "#a0a5b2"
     return jsonify(dict(result=totals))
 
+@app.route('/sentiment', methods=["POST"])
+def sentiment_analysis_endpoint():
+    hist = get_parents()
+    total = 0
+    neutral = 0
+    positive = 0
+    negative = 0
+    count = 0
+    for res in hist:
+        if "sentiment" in res:
+            count += 1
+            if res["sentiment"] == 0:
+                neutral += res["magnitude"] / 10
+            elif res["sentiment"] > 0:
+                positive += res["magnitude"] * res["sentiment"]
+            else:
+                negative += -res["magnitude"] * res["sentiment"]
+    total = neutral + positive + negative
+    totals = [{"type": "Positive", "value": positive / total * 100, "color": "mediumseagreen"},
+              {"type": "Negative", "value": negative / total * 100, "color": "firebrick"},
+              {"type": "Neutral", "value": neutral / total * 100, "color": "#a0a5b2"}
+    ]
 
-def classifyForIcon():
-    hist = get_parent_urls()
+    return jsonify(dict(result=totals, count=count))
 
-    vecs = convote_vectorizer.transform([x[1] for x in hist if len(x[1]) > 50])
-    pred = classifier.predict(vecs)
-    prob = classifier.predict_proba(vecs)
-    counts = prob.sum(axis=0)
-    #print(counts)
-    #print(counts.shape)
-    totals = []
-    #print(counts[0])
-    for i in range(counts.shape[0]):
-        totals.append([classes[i], counts[i]])
-    totals = sorted(totals, key=lambda x: x[1])[::-1]
-    total_prob = sum([x[1] for x in totals])
-    totals = [{"type": x[0], "value": float(x[1]) / total_prob * 100} for x in totals]
+@app.route('/classify_one', methods=["GET"])
+def classify_one():
 
-    return totals
+    url = request.args.get("url", "")
+    if len(url) == 0:
+        return jsonify(dict(error= "Invalid url"))
+    print(url)
+    print(url.split("?")[0])
+    hist = getUrls([url.split("?")[0]])
+    if len(hist) == 0:
+        return jsonify(dict(error= "Unreachable urls"))
+    print(hist)
+    return jsonify(dict(result=hist))
 
 
 def classifyForDB(parent_data):
-    hist = parent_data
 
-    vecs = convote_vectorizer.transform([x[1] for x in hist if len(x[1]) > 50])
+    vecs = convote_vectorizer.transform([parent_data[1]])
     pred = classifier.predict(vecs)
     prob = classifier.predict_proba(vecs)
     counts = prob.sum(axis=0)
@@ -301,6 +352,13 @@ def classifyForDB(parent_data):
     totals = sorted(totals, key=lambda x: x[1])[::-1]
     total_prob = sum([x[1] for x in totals])
     totals = [{"type": x[0], "value": float(x[1]) / total_prob * 100} for x in totals]
+    for i in range(len(totals)):
+        if totals[i]["type"] == "R":
+            totals[i]["color"] = "#E91D0E"
+        elif totals[i]["type"] == "D":
+            totals[i]["color"] = "#232066"
+        else:
+            totals[i]["color"] = "#a0a5b2"
 
     return totals
 
