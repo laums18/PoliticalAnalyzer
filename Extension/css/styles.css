@@ -9,6 +9,38 @@
   --text-h: #e3edf9;
 }
 
+.linksDir line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.nodesDir circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.nodeD circle {
+  fill: #999;
+}
+
+.nodeD text {
+  font: 10px sans-serif;
+}
+
+.node--internalD circle {
+  fill: #555;
+}
+
+.node--internalD text {
+  text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
+}
+
+.linkD {
+  fill: none;
+  stroke: #555;
+  stroke-opacity: 0.4;
+  stroke-width: 1.5px;
+}
 
 #page, body{
 	background-color: var(--main-bg-color);
@@ -21,6 +53,18 @@
 	height: 50px;
   margin-left: 30px;
 	width: auto;
+}
+
+.title-inner {
+  font-family: "Segoe UI", sans-serif;
+  width: 100%;
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+  margin-top: 12px;
+
+  color: #999;
+  text-align: left;
+  font-size: 30px;
 }
 
  .title {
@@ -110,6 +154,14 @@
   width: 64px;
   height: 64px;
 }
+
+.lds-ellipsis.smaller{
+  display: inline-block;
+  position: relative;
+  width: 22px;
+  height: 10px;
+}
+
 .lds-ellipsis div {
   position: absolute;
   top: 27px;
@@ -119,6 +171,16 @@
   background: #676767;
   animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }
+.lds-ellipsis.smaller div {
+  position: absolute;
+  top: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #676767;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
 .lds-ellipsis div:nth-child(1) {
   left: 6px;
   animation: lds-ellipsis1 0.6s infinite;
@@ -135,6 +197,24 @@
   left: 45px;
   animation: lds-ellipsis3 0.6s infinite;
 }
+
+.lds-ellipsis.smaller div:nth-child(1) {
+  left: 2px;
+  animation: lds-ellipsis1 1s infinite;
+}
+.lds-ellipsis.smaller div:nth-child(2) {
+  left: 2px;
+  animation: lds-ellipsis4 1s infinite;
+}
+.lds-ellipsis.smaller div:nth-child(3) {
+  left: 8px;
+  animation: lds-ellipsis4 1s infinite;
+}
+.lds-ellipsis.smaller div:nth-child(4) {
+  left: 14px;
+  animation: lds-ellipsis3 1s infinite;
+}
+
 @keyframes lds-ellipsis1 {
   0% {
     transform: scale(0);
@@ -158,4 +238,87 @@
   100% {
     transform: translate(19px, 0);
   }
+}
+@keyframes lds-ellipsis4 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(6px, 0);
+  }
+}
+
+
+/*Chord Graph*/
+
+
+.chord {
+  fill-opacity: .67;
+}
+
+.backLayer {
+  z-index: -1;
+  fill: white;
+  opacity: 0;
+}
+
+
+.textc {
+  text
+}
+
+.pos {
+  fill: mediumseagreen;
+}
+
+.neg {
+  fill: firebrick;
+}
+
+.circ {
+  fill-opacity: .4;
+
+}
+
+.textc {
+  color: #888888;
+}
+
+.link {
+        fill: #ccc;
+        stroke: #888;
+        stroke-width: 1.5px;
+    }
+
+.links {
+  fill-opacity: .2;
+}
+
+.neut {
+  fill: #a0a5b2;
+}
+
+.dem {
+  fill: #232066;
+}
+
+.rep {
+  fill: #E91D0E;
+}
+
+.indep {
+  fill: #a0a5b2;
+}
+
+div.tooltip { 
+    position: absolute;     
+    text-align: center;                     
+    padding: 20px;       
+    font: 18px sans-serif;    
+    background: white; 
+    box-shadow: 0px 0px 1px 1px #ababab;  
+    border-radius: 0px;
+    opacity: .45;    
+    pointer-events: none; 
+    color: #777;    
 }

@@ -1,0 +1,2 @@
+x = "https://www.washingtonpost.com/business/economy/trump-keeps-us-allies-on-edge-ahead-of-steel-tariffs-deadline/2018/04/30/0d0d6ee4-4c84-11e8-af46-b1d6dc0d9bfe_story.html?utm_term=.c8a10c1c6455"
+print(".".join(x.split("/")[2].split(".")[1:]))

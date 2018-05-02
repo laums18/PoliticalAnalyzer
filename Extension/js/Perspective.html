@@ -1,0 +1,155 @@
+
+<!-- saved from url=(0062)chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/index.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style type="text/css">@charset "UTF-8";[ng\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>
+		<title> Perspective </title>
+		
+		<script src="chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/js/jquery.min.js"></script>
+		<link rel="stylesheet" href="chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/css/bootstrap.min.css">
+		<script src="chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/js/bootstrap.min.js"></script>
+		<script src="chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/js/angular.js"></script>
+		<link rel="stylesheet" type="text/css" href="chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/css/styles.css">
+		<script src="chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/js/lib/d3/d3.js"></script>
+     	<script src="chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/js/lib/d3/d3.layout.cloud.js"></script>
+    	<script src="chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/js/d3.wordcloud.js"></script> 
+		<script src="chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/js/index.js"></script>
+		<script src="chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/js/d3-path.v1.min.js"></script>
+	</head>
+	<body>
+		<div ng-app="myApp" ng-controller="page" class="ng-scope">
+			<nav class="navbar navbar-default" style="display: flex; align-items: center; padding: 0px; padding-bottom: 40px; width: 100%;text-align: center;">
+					<div class="navbar-header" style="z-index: 4;">
+						<span class="navbar-center" style="display: flex; align-items: center;">
+							<img style="display: inline-block; margin-top: -4px;" src="chrome-extension://mblbglpkjcjlnojpbpjknfejpdbkblld/assets/political_analyzer.png">
+							<span class="title">Perspective</span>
+						</span>
+						
+					</div>
+					<div class="gradient"></div>
+					<div class="gradient2"></div>
+			</nav>
+<!-- 			<div style="position: relative;">
+				<div class="headImage">
+
+				</div>
+				<div class="gradient"></div>
+				<div class="gradient2"></div>
+			</div> -->
+			<!-- <h1>Political Analyzer</h1> -->
+			<div class="container-fluid">
+				<h5>Placeholder description</h5>
+				<button class="btn btn-secondary" ng-click="twitterHistory()">Import Twitter Data<div class="lds-ellipsis ng-hide" ng-show="data.tweeting"><div></div><div></div><div></div><div></div></div></button>
+				<button class="btn btn-secondary" ng-click="plotWords()">Word Cloud</button>
+				<button class="btn btn-secondary" ng-click="classify()">Classify</button>
+				<button class="btn btn-secondary" ng-click="sentiment()">Sentiment</button>
+				<button class="btn btn-secondary" ng-click="sentiment_map()">Sentiment Map</button>
+				<button class="btn btn-secondary" ng-click="classify_map()">Classify Map</button>
+				<button class="btn btn-secondary" ng-click="loadDB()">Load DB</button>
+
+
+			</div>
+
+			<div class="container-fluid">
+				<h4> Results </h4>
+
+				<div class="row ng-hide" ng-show="data.show" style="text-align: center;">
+					<div class="col-sm-3 col-sm-offset-1">
+						<h5>The words you see the most in your browser...</h5>
+						<p>
+							These words are signifcant words, words that aren't to rare but are infrequent enough that they have some meaning to the text they came from. As more people submit their histories and feeds, these words will improve, and better assess the meaning of what you see!
+						</p>
+					</div>
+					<div class="col-sm-7">
+						<div id="wordcloud"></div>
+					</div>
+				</div>
+				<div style="text-align: center;">
+				<div class="lds-ellipsis ng-hide" ng-show="data.wording"><div></div><div></div><div></div><div></div></div>
+				</div>
+			</div>
+ 			<div class="container-fluid ng-hide" ng-show="data.result">
+				<div class="row" style="text-align: center;">
+					<div class="col-sm-3 col-sm-offset-1" style="text-align: center;">
+
+						<div id="drdonut"></div>
+					</div>
+					<div class="col-sm-5 col-sm-offset-1">
+						<h4>
+							Summary of classification
+						</h4>
+						<p>
+							The following percentages do not capture the intensity in which each website belongs to a dataset. This is simply the aggregate scores of your browsing history. We will be adding google sentiment analysis to our classifier to throw out items that only weakly belong to a class. We will also be adding an exclusion stemmer to our data preprocessing, which will get rid of words with document frequency that is equal in each class. (Origins, convote dataset)
+						</p>
+						<!-- ngRepeat: x in data.result -->
+		 			</div>
+	 			</div> 
+			</div>
+			<div style="text-align: center;">
+				<div class="lds-ellipsis ng-hide" ng-show="data.classifying"><div></div><div></div><div></div><div></div></div>
+			</div>
+			<div class="container-fluid ng-hide" ng-show="data.result2" style="margin-top: 18px;">
+				<div class="row" style="text-align: center;">
+					<div class="col-sm-3 col-sm-offset-1" style="text-align: center;">
+						<h4>
+							Summary of sentiment analysis
+						</h4>
+						<p>
+							Insert here
+						</p>
+						<!-- ngRepeat: x in data.result2 -->
+		 			</div>
+		 			<div class="col-sm-5 col-sm-offset-1" style="text-align: center;">
+						<div id="sentdonut"></div>
+					</div>
+	 			</div> 
+			</div>
+			<div style="text-align: center;">
+				<div class="lds-ellipsis ng-hide" ng-show="data.senting"><div></div><div></div><div></div><div></div></div>
+			</div>
+			<div class="container-fluid ng-hide" ng-show="data.result3" style="margin-top: 18px;">
+				<div class="row" style="text-align: center;">
+					<div class="col-sm-6 col-sm-offset-1" style="text-align: center;">
+						<div id="sent_map_container"></div>
+					</div>
+					<div class="col-sm-3" style="text-align: center;">
+						<h4>
+							Where the mean stuff comes from
+						</h4>
+						<p>
+							Insert herejalkdshgpidufhgps;idufhgsdi;ujhgs;dkhg
+							sdkjflhgsdlijfhglsdifhglsdkjfhgsdlkjsdklhgsdgf
+							dsfhgsdlkfhgsdlkhglksdjfhgklsdjhglksdsjkldsfdklhglskdgf
+							sdfgjkhsdfgklhsdglkshdfgkljshdgklshdfgklsdhlkgh
+						</p>
+		 			</div>
+
+	 			</div> 
+			</div>
+			<div style="text-align: center;">
+				<div class="lds-ellipsis ng-hide" ng-show="data.sent_mapping"><div></div><div></div><div></div><div></div></div>
+			</div>
+			<div class="container-fluid ng-hide" ng-show="data.result4" style="margin-top: 18px;">
+				<div class="row" style="text-align: center;">
+					<div class="col-sm-3 col-sm-offset-1" style="text-align: center;">
+						<h4>
+							Where the rep/dem stuff comes from
+						</h4>
+						<p>
+							Insert herejalkdshgpidufhgps;idufhgsdi;ujhgs;dkhg
+							sdkjflhgsdlijfhglsdifhglsdkjfhgsdlkjsdklhgsdgf
+							dsfhgsdlkfhgsdlkhglksdjfhgklsdjhglksdsjkldsfdklhglskdgf
+							sdfgjkhsdfgklhsdglkshdfgkljshdgklshdfgklsdhlkgh
+						</p>
+		 			</div>
+					<div class="col-sm-6 col-sm-offset-1" style="text-align: center;">
+						<div id="class_map_container"></div>
+					</div>
+
+	 			</div> 
+			</div>
+			<div style="text-align: center;">
+				<div class="lds-ellipsis ng-hide" ng-show="data.class_mapping"><div></div><div></div><div></div><div></div></div>
+			</div>
+			<div style="width:100px; height: 300px;"></div>
+		</div>
+	
+</body></html>
