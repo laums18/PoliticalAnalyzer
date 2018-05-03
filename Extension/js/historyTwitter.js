@@ -43,7 +43,7 @@ function tweetsCounter() {
 }
 
 
-function startScraping(tweetsAmount, resolve, reject) {
+function startScraping(tweetsAmount) {
 	var tweets = getTweets();
 	var users = getUsers();
 
@@ -55,40 +55,25 @@ function startScraping(tweetsAmount, resolve, reject) {
 	};
 
 	var json_text = JSON.stringify(db, null, 2);
-	resolve(json_text);
-
-	var vLink = document.createElement('a'),
-	vBlob = new Blob([json_text], {type: "octet/stream"}),
-	vName = 'tweets.json',
-	vUrl = window.URL.createObjectURL(vBlob);
-	vLink.setAttribute('href', vUrl);
-	vLink.setAttribute('download', vName );
-	vLink.click();
 	
 	return json_text;
 }
 
 
-function scrollBottom(tweetsAmount, resolve, reject) {
+function scrollBottom(tweetsAmount) {
 	setTimeout(function timeOut() {
 		var tweetsLength = tweetsCounter();
 		var twitterData;
 
 		if (tweetsLength < tweetsAmount) {
 			window.scrollTo(0, document.body.scrollHeight);
-			scrollBottom(tweetsAmount, resolve, reject);
+			scrollBottom(tweetsAmount);
 		}
 		else {
-			twitterData = startScraping(tweetsAmount,resolve, reject);
+			twitterData = startScraping(tweetsAmount);
+			chrome.runtime.sendMessage({greeting: "twitter", data: twitterData});
 		}
-		return twitterData;
-
 	}, 1000);
 }
 
-var promise = new Promise(function(resolve, reject) {
-	scrollBottom(10, resolve, reject);
-	console.log("DOne")
-})
-console.log(promise)
-promise;
+scrollBottom(500);
