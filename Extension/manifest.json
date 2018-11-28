@@ -1,11 +1,13 @@
   {
-    "name": "Perspective",
-    "description" : "Enter Descripttion here",
-    "version": "0.0",
+    "name": "Slate",
+    "description": "Political bias analyzer for text",
+    "version": "1",
     "manifest_version": 2,
+
     "browser_action": {
       "default_popup": "popup.html",
-      "default_icon": "political_analyzer.png"
+      "default_icon": "slant.png", //insert slant logo here
+      "icons": "slant.png" //insert slant logo
     },
 
     "background":{

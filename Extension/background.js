@@ -6,7 +6,9 @@ chrome.runtime.onInstalled.addListener(function() {
 
 
 	   var qurl="http:127.0.0.1:5000/initialUpdate";
-	   $.ajax({
+
+	   
+	/*   $.ajax({
 	            type: "POST",
 	            cache: false,
 	            data: {
@@ -21,7 +23,9 @@ chrome.runtime.onInstalled.addListener(function() {
 	                alert("error: " + error.status);
 	                console.log(error);
 	            }
-	        })
+	        })*/
+
+
 	}) 
 });
 
